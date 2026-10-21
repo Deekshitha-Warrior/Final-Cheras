@@ -48,10 +48,7 @@ export default function AdminLogin() {
             {BRAND_SUBTITLE && <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[#B8B8B8]">{BRAND_SUBTITLE}</p>}
           </div>
           <div className="my-auto flex flex-col items-center justify-center py-6 w-full">
-            <div
-              className="relative p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] border border-[#E5E5E5] shadow-[0_12px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.06)] flex items-center justify-center max-w-[280px] w-full aspect-square"
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-            >
+            <div className="cheras-logo-frame relative  rounded-3xl bg-black border border-neutral-700 shadow-[0_12px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.06)] flex items-center justify-center max-w-[280px] w-full aspect-square" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
               <img
                 src={BRAND_LOGO}
                 alt={BRAND_EN}
@@ -68,10 +65,7 @@ export default function AdminLogin() {
           <div className="mb-4 sm:mb-5 flex flex-col items-center text-center lg:items-start lg:text-left">
             {/* Mobile-only logo (since left panel is hidden on mobile) */}
             <div className="mb-3 lg:hidden flex justify-center">
-              <div
-                className="w-16 h-16 rounded-2xl bg-[#FFFFFF] border border-[#E5E5E5] p-2 flex items-center justify-center shadow-sm"
-                style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-              >
+              <div className="cheras-logo-frame w-16 h-16 rounded-2xl bg-black border border-neutral-700  flex items-center justify-center shadow-sm" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
                 <img src={BRAND_LOGO} alt={BRAND_EN} className="w-full h-full object-contain" />
               </div>
             </div>

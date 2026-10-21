@@ -2061,10 +2061,7 @@ export default function Dashboard() {
         {/* Desktop brand header */}
         <div className={`hidden lg:flex items-center relative transition-all duration-300 shrink-0 ${sidebarCollapsed ? 'flex-col items-center pt-4 pb-3 px-2 gap-2' : 'px-4 py-3.5 justify-between border-b border-white/10'}`}>
           <Link to="/pos" title="Go to Billing Panel" className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'justify-center' : 'flex-1'}`}>
-            <div
-              className="flex items-center justify-center shrink-0 w-9 h-9 rounded-xl bg-[#FFFFFF] border border-[#E5E5E5] shadow-sm hover:scale-105 transition-transform p-1 overflow-hidden"
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-            >
+            <div className="cheras-logo-frame flex items-center justify-center shrink-0 w-9 h-9 rounded-xl bg-black border border-neutral-700 shadow-sm hover:scale-105 transition-transform  overflow-hidden" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
               <img src={BRAND_ICON} alt={BRAND_EN} className="w-full h-full object-contain" />
             </div>
             {!sidebarCollapsed && (
@@ -2092,10 +2089,7 @@ export default function Dashboard() {
           style={{ backgroundColor: themeColor }}
         >
           <Link to="/pos" title="Go to Billing Panel" className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFFFFF] border border-[#E5E5E5] shrink-0 shadow-sm hover:scale-105 transition-transform p-1 overflow-hidden"
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-            >
+            <div className="cheras-logo-frame flex h-8 w-8 items-center justify-center rounded-lg bg-black border border-neutral-700 shrink-0 shadow-sm hover:scale-105 transition-transform  overflow-hidden" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
               <img src={BRAND_ICON} alt={BRAND_EN} className="w-full h-full object-contain" />
             </div>
             <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">

@@ -464,3 +464,7 @@ button, a[role="button"] {
     overflow: hidden;
   }
 }
+
+/* Keep the supplied black logo flush with every brand tile. */
+.cheras-logo-frame { padding: 0 !important; overflow: hidden; background: #000; }
+.cheras-logo-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }

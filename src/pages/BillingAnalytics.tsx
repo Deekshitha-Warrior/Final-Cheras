@@ -620,10 +620,7 @@ export default function BillingAnalytics() {
       <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="admin-logo-lockup min-w-[280px]">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFFFFF] border border-[#E5E5E5] shadow-sm shrink-0 p-1.5 overflow-hidden"
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-            >
+            <div className="cheras-logo-frame flex h-12 w-12 items-center justify-center rounded-2xl bg-black border border-neutral-700 shadow-sm shrink-0  overflow-hidden" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
               <img src={BRAND_ICON} alt={BRAND_EN} className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0">

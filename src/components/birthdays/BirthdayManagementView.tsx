@@ -171,10 +171,7 @@ export const BirthdayManagementView: React.FC = () => {
         <div className="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-[#171717]/5 via-[#B8B8B8]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex items-center gap-3.5 relative z-10">
-          <div
-            className="w-12 h-12 rounded-2xl bg-[#FFFFFF] border border-[#E5E5E5] flex items-center justify-center p-1.5 shadow-sm shrink-0 overflow-hidden"
-            style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E5E5' }}
-          >
+          <div className="cheras-logo-frame w-12 h-12 rounded-2xl bg-black border border-neutral-700 flex items-center justify-center  shadow-sm shrink-0 overflow-hidden" style={{ backgroundColor: '#000000', borderColor: '#404040' }}>
             <img src={BRAND_ICON} alt={BRAND_EN} className="w-full h-full object-contain" />
           </div>
 
