@@ -1,23 +1,6 @@
--- ==========================================================================
--- CHERAS CLOTHING POS - CONSOLIDATED SUPABASE DATABASE MIGRATIONS
--- Total Production Migrations: 29
--- Generated: 2026-10-16T07:46:22.764Z
--- ==========================================================================
+-- Cheras Clothing: apply in a new dedicated Supabase project.
 
--- Administrative helper function for service_role migration execution
-CREATE OR REPLACE FUNCTION public.exec_sql(sql text)
-RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  EXECUTE sql;
-END;
-$$;
-GRANT EXECUTE ON FUNCTION public.exec_sql(text) TO service_role;
-
-
--- ==========================================================================
--- MIGRATION 1 of 29: 20260716_0001_universal_look_schema.sql
--- ==========================================================================
-
+-- 20260716_0001_universal_look_schema.sql
 -- Universal Look billing schema.
 -- Safe to run against a fresh project or the existing Universal Look project.
 
@@ -572,10 +555,7 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END;
 $$;
 
--- ==========================================================================
--- MIGRATION 2 of 29: 20260716_0002_universal_look_catalog.sql
--- ==========================================================================
-
+-- 20260716_0002_universal_look_catalog.sql
 -- Universal Look initial catalog. Existing matching products are preserved.
 
 INSERT INTO public.categories (name_en, name_ta, is_active, sort_order)
@@ -690,10 +670,7 @@ JOIN public.categories c ON LOWER(c.name_en) = LOWER(catalog.category_name)
 WHERE p.category_id = c.id
   AND LOWER(BTRIM(p.name)) = LOWER(BTRIM(catalog.product_name));
 
--- ==========================================================================
--- MIGRATION 3 of 29: 20260716_0003_order_rpc_compatibility.sql
--- ==========================================================================
-
+-- 20260716_0003_order_rpc_compatibility.sql
 -- Align the live legacy billing schema with the current Universal Look RPC payload.
 -- Idempotent: safe for both upgraded and freshly migrated projects.
 
@@ -933,10 +910,7 @@ NOTIFY pgrst, 'reload schema';
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 4 of 29: 20260719_0004_advance_orders.sql
--- ==========================================================================
-
+-- 20260719_0004_advance_orders.sql
 begin;
 
 create sequence if not exists public.deposit_number_seq start 1;
@@ -1114,10 +1088,7 @@ grant execute on function public.complete_advance_order(uuid,text,text) to publi
 notify pgrst, 'reload schema';
 commit;
 
--- ==========================================================================
--- MIGRATION 5 of 29: 20260722_0005_eight_digit_invoice_numbers.sql
--- ==========================================================================
-
+-- 20260722_0005_eight_digit_invoice_numbers.sql
 -- Migration: 8-digit Invoice Number Generation
 -- Ensures invoice numbers are strictly 8 digits in total (e.g., 10000001, 10000002...)
 
@@ -1133,10 +1104,7 @@ AS $$
   SELECT LPAD(nextval('public.invoice_number_seq')::TEXT, 8, '0');
 $$;
 
--- ==========================================================================
--- MIGRATION 6 of 29: 20260724_0006_fix_complete_advance_order.sql
--- ==========================================================================
-
+-- 20260724_0006_fix_complete_advance_order.sql
 -- Migration: Fix complete_advance_order RPC
 -- The previous version referenced columns (unit_price, source, note) that do
 -- not exist in the order_items table. This patch corrects the insert to use
@@ -1269,10 +1237,7 @@ GRANT EXECUTE ON FUNCTION public.complete_advance_order(uuid, text, text)
 
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 7 of 29: 20260724_0008_fix_public_invoice_rpc.sql
--- ==========================================================================
-
+-- 20260724_0008_fix_public_invoice_rpc.sql
 -- Migration: Fix missing get_public_invoice_by_number RPC
 -- Re-creates the function and forces a schema cache reload to resolve 404 errors on the /invoice page
 
@@ -1292,10 +1257,7 @@ GRANT EXECUTE ON FUNCTION public.get_public_invoice_by_number(TEXT) TO anon, aut
 -- Force PostgREST to reload the schema cache
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 8 of 29: 20260724_0009_create_invoices_bucket.sql
--- ==========================================================================
-
+-- 20260724_0009_create_invoices_bucket.sql
 -- Migration: Create invoices storage bucket
 -- Creates the 'invoices' bucket and sets up public read access and upload policies
 
@@ -1312,10 +1274,7 @@ CREATE POLICY invoices_portal_upload ON storage.objects FOR INSERT TO anon, auth
 DROP POLICY IF EXISTS invoices_portal_update ON storage.objects;
 CREATE POLICY invoices_portal_update ON storage.objects FOR UPDATE TO anon, authenticated USING (bucket_id = 'invoices') WITH CHECK (bucket_id = 'invoices');
 
--- ==========================================================================
--- MIGRATION 9 of 29: 20260726_0007_update_complete_advance_order_discount.sql
--- ==========================================================================
-
+-- 20260726_0007_update_complete_advance_order_discount.sql
 -- Migration: Update complete_advance_order to handle final amount, discounts, and coupons
 -- This creates a new version of the RPC (v2) which is called from the frontend.
 
@@ -1460,10 +1419,7 @@ GRANT EXECUTE ON FUNCTION public.complete_advance_order_v2(uuid, text, numeric, 
 
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 10 of 29: 20260728_0010_final_audit_fixes.sql
--- ==========================================================================
-
+-- 20260728_0010_final_audit_fixes.sql
 -- ============================================================
 -- Migration 0010: Final audit fixes
 -- Date: 2026-07-28
@@ -1584,10 +1540,7 @@ CREATE POLICY "Users can update own profile"
 -- 8. Reload PostgREST schema cache
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 11 of 29: 20260808_0011_billing_date_and_order_fields.sql
--- ==========================================================================
-
+-- 20260808_0011_billing_date_and_order_fields.sql
 -- ============================================================
 -- Migration 0011: Add billing_date and ensure order metadata columns exist
 -- Date: 2026-08-08
@@ -1619,10 +1572,7 @@ NOTIFY pgrst, 'reload schema';
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 12 of 29: 20260901_0012_inventory_barcode_addon.sql
--- ==========================================================================
-
+-- 20260901_0012_inventory_barcode_addon.sql
 -- ====================================================================
 -- Migration 0012: Barcode Management & Inventory Movement Ledger Addon
 -- ====================================================================
@@ -2191,10 +2141,7 @@ WHERE id = 1;
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 13 of 29: 20260903_0013_expense_tracker_addon.sql
--- ==========================================================================
-
+-- 20260903_0013_expense_tracker_addon.sql
 -- ====================================================================
 -- Migration 0013: Expense Tracker & Category Management Addon
 -- ====================================================================
@@ -2292,10 +2239,7 @@ $$;
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 14 of 29: 20260904_0015_unregistered_category.sql
--- ==========================================================================
-
+-- 20260904_0015_unregistered_category.sql
 -- ============================================================================
 -- Migration: 20260904_0015_unregistered_category.sql
 -- Description: Seed system category 'Unregistered' for ad-hoc POS non-inventory billing
@@ -2313,10 +2257,7 @@ BEGIN
   END IF;
 END $$;
 
--- ==========================================================================
--- MIGRATION 15 of 29: 20260911_0016_set_universal_look_details.sql
--- ==========================================================================
-
+-- 20260911_0016_set_universal_look_details.sql
 -- Migration: 20260911_0016_set_universal_look_details.sql
 -- Rebrand store details to Universal Look and initialize branding storage bucket
 
@@ -2373,10 +2314,7 @@ CREATE POLICY branding_portal_update ON storage.objects
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 16 of 29: 20260912_0017_update_store_address.sql
--- ==========================================================================
-
+-- 20260912_0017_update_store_address.sql
 -- Migration: 20260912_0017_update_store_address.sql
 -- Update store address for Universal Look
 
@@ -2389,10 +2327,7 @@ WHERE id = 1;
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 17 of 29: 20260917_0001_fix_soft_delete_unique_constraints.sql
--- ==========================================================================
-
+-- 20260917_0001_fix_soft_delete_unique_constraints.sql
 -- Fix for products unique constraint
 DROP INDEX IF EXISTS public.products_category_name_unique;
 CREATE UNIQUE INDEX products_category_name_unique
@@ -2405,10 +2340,7 @@ CREATE UNIQUE INDEX product_variants_product_name_unique
   ON public.product_variants (product_id, LOWER(BTRIM(variant_name)))
   WHERE is_active = true;
 
--- ==========================================================================
--- MIGRATION 18 of 29: 20260918_0018_advance_order_self_heal.sql
--- ==========================================================================
-
+-- 20260918_0018_advance_order_self_heal.sql
 -- ============================================================
 -- Migration 0018: Advance order self-healing & status integrity
 -- Date: 2026-09-18
@@ -2620,10 +2552,7 @@ GRANT EXECUTE ON FUNCTION public.update_advance_order_status(uuid, text, text) T
 
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 19 of 29: 20260918_0019_robust_public_invoice_lookup.sql
--- ==========================================================================
-
+-- 20260918_0019_robust_public_invoice_lookup.sql
 -- Migration: 20260918_0019_robust_public_invoice_lookup.sql
 -- Enables get_public_invoice_by_number to seamlessly match invoices regardless of:
 -- 1. "INV" prefix (e.g. "INV00000030" or "00000030")
@@ -2663,10 +2592,7 @@ GRANT EXECUTE ON FUNCTION public.get_public_invoice_by_number(TEXT) TO anon, aut
 
 NOTIFY pgrst, 'reload schema';
 
--- ==========================================================================
--- MIGRATION 20 of 29: 20260921_0020_rebrand_to_universal_look.sql
--- ==========================================================================
-
+-- 20260921_0020_rebrand_to_universal_look.sql
 -- Migration: 20260921_0020_rebrand_to_universal_look.sql
 -- Rebrand store details to Universal Look, ensure categories and storage buckets
 
@@ -2723,10 +2649,7 @@ CREATE POLICY branding_portal_update ON storage.objects
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 21 of 29: 20260921_0021_reassign_deleted_category_to_general.sql
--- ==========================================================================
-
+-- 20260921_0021_reassign_deleted_category_to_general.sql
 -- Migration: 20260921_0021_reassign_deleted_category_to_general.sql
 -- Description: Automatically reassign products to 'General' category when any category is deleted.
 
@@ -2776,10 +2699,7 @@ WHERE category_id IS NULL
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 22 of 29: 20260923_0022_fix_orders_remarks_constraint.sql
--- ==========================================================================
-
+-- 20260923_0022_fix_orders_remarks_constraint.sql
 -- ==========================================================================
 -- Migration 0022: Fix orders table remarks and reference_number NOT NULL constraint
 -- Date: 2026-09-23
@@ -3044,10 +2964,7 @@ NOTIFY pgrst, 'reload schema';
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 23 of 29: 20260930_0023_split_payments.sql
--- ==========================================================================
-
+-- 20260930_0023_split_payments.sql
 -- ============================================================
 -- Migration 0023: Split payments (cash / QR / card)
 -- Date: 2026-09-30
@@ -3315,10 +3232,7 @@ NOTIFY pgrst, 'reload schema';
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 24 of 29: 20261001_0024_advance_order_reference_number.sql
--- ==========================================================================
-
+-- 20261001_0024_advance_order_reference_number.sql
 BEGIN;
 
 ALTER TABLE public.advance_orders
@@ -3328,10 +3242,7 @@ NOTIFY pgrst, 'reload schema';
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 25 of 29: 20261004_0025_rebrand_to_madhura_tex.sql
--- ==========================================================================
-
+-- 20261004_0025_rebrand_to_madhura_tex.sql
 -- Migration: 20261004_0025_rebrand_to_madhura_tex.sql
 -- Rebrand store details to Madhura Tex, ensure categories and storage buckets
 
@@ -3388,10 +3299,7 @@ CREATE POLICY branding_portal_update ON storage.objects
 
 COMMIT;
 
--- ==========================================================================
--- MIGRATION 26 of 29: 20261004_0026_grant_table_permissions.sql
--- ==========================================================================
-
+-- 20261004_0026_grant_table_permissions.sql
 -- ==============================================================================
 -- Migration: 20261004_0026_grant_table_permissions.sql
 -- Description: Grant table, sequence, and routine privileges to anon, authenticated,
@@ -3415,10 +3323,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authentic
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
 
--- ==========================================================================
--- MIGRATION 27 of 29: 20261006_0027_advance_order_inventory_stock.sql
--- ==========================================================================
-
+-- 20261006_0027_advance_order_inventory_stock.sql
 -- ==============================================================================
 -- Migration: 20261006_0027_advance_order_inventory_stock.sql
 -- Description: Advance order stock reservation and inventory movements support.
@@ -3437,10 +3342,7 @@ CREATE INDEX IF NOT EXISTS idx_inv_movements_ref
 -- When an advance order is completed, no additional stock deduction is performed.
 COMMENT ON TABLE public.advance_orders IS 'Stores customer advance bookings and deposits with inventory stock reserved at booking.';
 
--- ==========================================================================
--- MIGRATION 28 of 29: 20261015_0028_customer_birthdays_and_offers.sql
--- ==========================================================================
-
+-- 20261015_0028_customer_birthdays_and_offers.sql
 -- Migration: 20261015_0028_customer_birthdays_and_offers.sql
 -- Description: Adds customer birthday tracking and birthday promotional offers for CHERAS CLOTHING.
 -- Safe, non-destructive migration.
@@ -3539,10 +3441,7 @@ CREATE POLICY "Admins and staff can manage birthday offers"
   USING (true)
   WITH CHECK (true);
 
--- ==========================================================================
--- MIGRATION 29 of 29: 20261016_0030_advance_order_financial_breakdown.sql
--- ==========================================================================
-
+-- 20261016_0030_advance_order_financial_breakdown.sql
 -- Migration: 20261016_0030_advance_order_financial_breakdown.sql
 -- Description: Adds subtotal, delivery_charge, discounts, and GST breakdown columns to advance_orders table.
 
@@ -3561,290 +3460,565 @@ ALTER TABLE public.advance_orders
 
 GRANT ALL ON TABLE public.advance_orders TO anon, authenticated, service_role;
 
+-- 20261017_0031_sync_advance_order_breakdown_on_completion.sql
+-- Migration: 20261017_0031_sync_advance_order_breakdown_on_completion.sql
+-- Description: Ensures complete_advance_order_v2 copies subtotal, delivery_charge, coupon_code,
+-- discount_amount, manual_discount_amount, total_gst, gst_amount, gst_enabled, reference_number,
+-- and remarks from the advance_order to the created orders table record.
 
--- ==========================================================================
--- ==========================================================================
--- SECTION: PROPOSED / STAGING MIGRATIONS (supabase/proposed_migrations)
--- ==========================================================================
--- ⚠️ IMPORTANT NOTICE FOR SUPABASE SQL EDITOR USERS:
--- Migrations 1 through 29 above are the active production migrations
--- required for CHERAS CLOTHING POS (Catalog, Orders, Inventory, Barcodes, Advances,
--- Expenses, Split Payments, and Customer Birthdays & Offers).
---
--- The migration(s) below are PROPOSED DRAFTS that enforce strict least-privilege RLS
--- by revoking permissions from the anonymous ("anon") role and requiring Supabase
--- Auth JWT sessions for staff/admin actions.
--- Because the standard POS terminal operates with client-side credential verification
--- using the Supabase anonymous client key, executing these statements immediately
--- will block anonymous POS cashier checkouts (42501 permission denied).
---
--- They are preserved in full below, wrapped in a block comment /* ... */ so you
--- can safely copy and run this entire consolidated file into the Supabase SQL Editor.
--- If and when you migrate cashiers and admins to Supabase Auth users, remove the
--- block comment markers to apply these security policies.
--- ==========================================================================
+DROP FUNCTION IF EXISTS public.complete_advance_order_v2(uuid,text,numeric,text,numeric,numeric,text);
+DROP FUNCTION IF EXISTS public.complete_advance_order_v2(uuid,text,numeric,text,numeric,numeric,text,jsonb);
 
-/*
--- ==========================================================================
--- PROPOSED MIGRATION 1 of 1: 20261016_0029_secure_least_privilege_rls.sql
--- ==========================================================================
-
--- ==============================================================================
--- PROPOSED MIGRATION — DO NOT EXECUTE DIRECTLY
--- File: supabase/proposed_migrations/20261016_0029_secure_least_privilege_rls.sql
--- Status: DRAFT / PENDING STAGING VALIDATION
--- Scope: CHERAS CLOTHING POS & Inventory Management (சேராஸ் கிளோதிங்)
--- Description:
---   Establishes least-privilege Row Level Security (RLS) policies and revokes
---   unrestricted table/routine grants from the anonymous ('anon') role.
---   Protects sensitive business data (expenses, inventory audit logs, customer PII)
---   while preserving public catalog browsing and digital invoice lookup.
--- ==============================================================================
-
--- ==============================================================================
--- ROLLBACK SCRIPT INSTRUCTIONS (If rollback is needed):
--- Run supabase/migrations/20261004_0026_grant_table_permissions.sql to restore
--- universal permissive grants to anon and authenticated roles.
--- ==============================================================================
-
-BEGIN;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 1. Helper Function: Check User Role from JWT or Profiles Table
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION public.current_user_role()
-RETURNS TEXT
-LANGUAGE sql
-STABLE
+CREATE OR REPLACE FUNCTION public.complete_advance_order_v2(
+  p_order_id uuid,
+  p_payment_method text,
+  p_final_amount numeric,
+  p_coupon_code text DEFAULT NULL,
+  p_coupon_percentage numeric DEFAULT 0,
+  p_manual_discount numeric DEFAULT 0,
+  p_remarks text DEFAULT '',
+  p_split_details jsonb DEFAULT '{}'::jsonb
+)
+RETURNS TABLE(order_id uuid, invoice_no text, completed_at timestamptz)
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT COALESCE(
-    (auth.jwt() -> 'app_metadata' ->> 'role'),
-    (auth.jwt() ->> 'role'),
-    (SELECT role FROM public.profiles WHERE id = auth.uid()),
-    'anon'
+DECLARE
+  v_advance        public.advance_orders;
+  v_order_id       uuid := gen_random_uuid();
+  v_invoice        text;
+  v_now            timestamptz := now();
+  v_items          jsonb;
+  v_item           jsonb;
+  v_coupon_code    text;
+  v_coupon_disc    numeric := 0;
+  v_manual_disc    numeric := 0;
+  v_delivery       numeric := 0;
+  v_total_gst      numeric := 0;
+  v_subtotal       numeric := 0;
+  v_dep            record;
+  v_dep_bd         jsonb := '{}'::jsonb;
+  v_fin_bd         jsonb;
+  v_split          jsonb;
+BEGIN
+  -- Validate payment method
+  IF lower(coalesce(p_payment_method, '')) NOT IN ('cash', 'upi', 'card', 'split') THEN
+    RAISE EXCEPTION 'Select a valid payment method';
+  END IF;
+  IF lower(p_payment_method) = 'split' AND abs(
+       coalesce((p_split_details->>'cash')::numeric, 0)
+     + coalesce((p_split_details->>'qr')::numeric, (p_split_details->>'upi')::numeric, 0)
+     + coalesce((p_split_details->>'card')::numeric, 0) - p_final_amount) >= 0.01 THEN
+    RAISE EXCEPTION 'Split payment amounts must add up to the final amount';
+  END IF;
+
+  -- Lock and fetch the advance order
+  SELECT * INTO v_advance FROM public.advance_orders WHERE id = p_order_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Advance order not found';
+  END IF;
+
+  IF v_advance.status = 'cancelled' THEN
+    RAISE EXCEPTION 'A cancelled order cannot be completed';
+  END IF;
+
+  -- Self-healing check: If invoice or completed order already exists, ensure completed status and return cleanly
+  IF v_advance.completed_order_id IS NOT NULL OR v_advance.invoice_number IS NOT NULL THEN
+    IF v_advance.status != 'completed' THEN
+      UPDATE public.advance_orders
+      SET status = 'completed',
+          updated_at = v_now
+      WHERE id = p_order_id;
+    END IF;
+
+    RETURN QUERY SELECT
+      coalesce(v_advance.completed_order_id, gen_random_uuid()),
+      coalesce(v_advance.invoice_number, 'INV00000000'),
+      coalesce(v_advance.completed_at, v_now);
+    RETURN;
+  END IF;
+
+  -- Financial breakdown calculation from the advance order
+  v_delivery := coalesce(v_advance.delivery_charge, 0);
+  v_coupon_code := coalesce(nullif(trim(p_coupon_code), ''), v_advance.coupon_code);
+  v_coupon_disc := coalesce(
+    v_advance.coupon_discount,
+    CASE WHEN v_coupon_code IS NOT NULL AND v_coupon_code <> '' THEN coalesce(v_advance.discount_amount, 0) ELSE 0 END,
+    0
   );
+  v_manual_disc := greatest(coalesce(nullif(p_manual_discount, 0), v_advance.manual_discount, 0), 0);
+  v_total_gst := coalesce(
+    v_advance.total_gst,
+    coalesce(v_advance.cgst_amount, 0) + coalesce(v_advance.sgst_amount, 0),
+    0
+  );
+  v_subtotal := coalesce(
+    v_advance.subtotal,
+    greatest(0, v_advance.total_amount - v_delivery - v_total_gst + v_coupon_disc + v_manual_disc)
+  );
+
+  -- Generate invoice number using the existing 8-digit sequence
+  v_invoice := LPAD(nextval('public.invoice_number_seq')::TEXT, 8, '0');
+
+  -- Build items JSONB - prefer products array, fall back to single product
+  v_items := CASE
+    WHEN jsonb_typeof(v_advance.products) = 'array' AND jsonb_array_length(v_advance.products) > 0
+      THEN v_advance.products
+    ELSE jsonb_build_array(
+      jsonb_build_object(
+        'name',        v_advance.product_name,
+        'category',    v_advance.category,
+        'description', v_advance.description,
+        'quantity',    1,
+        'base_price',  v_advance.total_amount,
+        'line_total',  v_advance.total_amount,
+        'unit',        'piece',
+        'unit_type',   'unit',
+        'source',      'advance_order'
+      )
+    )
+  END;
+
+  -- Full collection breakdown for this order (deposit + final payment) by cash / qr / card
+  SELECT payment_method, split_details, amount INTO v_dep
+  FROM public.advance_order_payments
+  WHERE advance_order_id = p_order_id AND payment_type = 'deposit'
+  LIMIT 1;
+  IF FOUND THEN
+    v_dep_bd := public.payment_breakdown(v_dep.payment_method, v_dep.split_details, v_dep.amount);
+  END IF;
+  v_fin_bd := public.payment_breakdown(p_payment_method, p_split_details, p_final_amount);
+  v_split := jsonb_build_object(
+    'cash', coalesce((v_dep_bd->>'cash')::numeric, 0) + coalesce((v_fin_bd->>'cash')::numeric, 0),
+    'qr',   coalesce((v_dep_bd->>'qr')::numeric, 0)   + coalesce((v_fin_bd->>'qr')::numeric, 0),
+    'card', coalesce((v_dep_bd->>'card')::numeric, 0) + coalesce((v_fin_bd->>'card')::numeric, 0)
+  );
+
+  -- Create final sale order with full financial breakdown transferred
+  INSERT INTO public.orders (
+    id, invoice_no, customer_name, phone, address, user_id,
+    items, subtotal, total, status, order_mode, order_type,
+    shipping, delivery_charge, discount_amount, manual_discount_amount,
+    coupon_code, coupon_percentage, manual_discount_type, manual_discount_value,
+    total_gst, gst_amount, gst_enabled, remarks, reference_number,
+    payment_mode, payment_method, split_details, created_at, updated_at
+  ) VALUES (
+    v_order_id, v_invoice,
+    v_advance.customer_name, v_advance.phone, v_advance.address, auth.uid(),
+    v_items, v_subtotal, v_advance.total_amount,
+    'completed', 'offline', 'advance_order',
+    v_delivery, v_delivery, v_coupon_disc, v_manual_disc,
+    v_coupon_code, coalesce(p_coupon_percentage, 0), 'flat', v_manual_disc,
+    v_total_gst, v_total_gst, coalesce(v_advance.gst_enabled, v_total_gst > 0),
+    coalesce(nullif(trim(p_remarks), ''), v_advance.remarks, ''),
+    coalesce(v_advance.reference_number, ''),
+    lower(p_payment_method), lower(p_payment_method), v_split,
+    v_now, v_now
+  );
+
+  -- Insert order items
+  FOR v_item IN SELECT value FROM jsonb_array_elements(v_items) LOOP
+    INSERT INTO public.order_items (
+      order_id, product_name, name, quantity, unit, unit_type,
+      base_price, line_total, is_manual
+    ) VALUES (
+      v_order_id,
+      coalesce(nullif(trim(v_item->>'name'), ''), 'Product'),
+      coalesce(nullif(trim(v_item->>'name'), ''), 'Product'),
+      greatest(coalesce((v_item->>'quantity')::numeric, 1), 0),
+      coalesce(nullif(v_item->>'unit', ''), 'piece'),
+      coalesce(nullif(v_item->>'unit_type', ''), 'unit'),
+      greatest(coalesce((v_item->>'base_price')::numeric, 0), 0),
+      greatest(coalesce((v_item->>'line_total')::numeric, 0), 0),
+      false
+    );
+  END LOOP;
+
+  -- Record final payment
+  INSERT INTO public.advance_order_payments (
+    advance_order_id, payment_type, amount, payment_method, split_details, remarks, received_by, received_at
+  ) VALUES (
+    p_order_id, 'remaining', p_final_amount,
+    lower(p_payment_method),
+    CASE WHEN lower(p_payment_method) = 'split' THEN coalesce(p_split_details, '{}'::jsonb) ELSE '{}'::jsonb END,
+    coalesce(p_remarks, ''), auth.uid(), v_now
+  );
+
+  -- Mark advance order as completed
+  UPDATE public.advance_orders SET
+    status               = 'completed',
+    completed_at         = v_now,
+    completed_order_id   = v_order_id,
+    invoice_number       = v_invoice,
+    final_payment_method = lower(p_payment_method),
+    remarks              = CASE WHEN trim(coalesce(p_remarks, '')) = '' THEN remarks ELSE p_remarks END,
+    updated_at           = v_now
+  WHERE id = p_order_id;
+
+  -- Timeline events
+  INSERT INTO public.advance_order_timeline (
+    advance_order_id, event_type, label, remarks, created_by, created_at
+  ) VALUES
+    (p_order_id, 'remaining_payment_received', 'Remaining Payment Received', coalesce(p_remarks, ''), auth.uid(), v_now),
+    (p_order_id, 'invoice_generated',          'Invoice Generated',          v_invoice,               auth.uid(), v_now);
+
+  RETURN QUERY SELECT v_order_id, v_invoice, v_now;
+END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.current_user_role() TO anon, authenticated, service_role;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 2. PUBLIC CATALOG: categories, products, product_variants
---    - Anyone (anon/authenticated) can read active catalog items.
---    - Only authenticated 'admin' can insert, update, or delete catalog items.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Categories
-DROP POLICY IF EXISTS categories_portal_manage ON public.categories;
-DROP POLICY IF EXISTS categories_public_read ON public.categories;
-DROP POLICY IF EXISTS categories_admin_manage ON public.categories;
-
-CREATE POLICY categories_public_read ON public.categories
-  FOR SELECT TO anon, authenticated
-  USING (is_active = TRUE OR public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY categories_admin_manage ON public.categories
-  FOR ALL TO authenticated
-  USING (public.current_user_role() = 'admin')
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- Products
-DROP POLICY IF EXISTS products_portal_manage ON public.products;
-DROP POLICY IF EXISTS products_public_read ON public.products;
-DROP POLICY IF EXISTS products_admin_manage ON public.products;
-
-CREATE POLICY products_public_read ON public.products
-  FOR SELECT TO anon, authenticated
-  USING (is_active = TRUE OR public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY products_admin_manage ON public.products
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- Product Variants
-DROP POLICY IF EXISTS product_variants_portal_manage ON public.product_variants;
-DROP POLICY IF EXISTS product_variants_public_read ON public.product_variants;
-DROP POLICY IF EXISTS product_variants_admin_manage ON public.product_variants;
-
-CREATE POLICY product_variants_public_read ON public.product_variants
-  FOR SELECT TO anon, authenticated
-  USING (is_active = TRUE OR public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY product_variants_admin_manage ON public.product_variants
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 3. FINANCIAL RECORDS: expenses & expense_categories
---    - Strictly restricted to authenticated 'admin'.
---    - Zero access for 'anon' or general public.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Expense Categories
-DROP POLICY IF EXISTS expense_categories_all ON public.expense_categories;
-DROP POLICY IF EXISTS expense_categories_admin_manage ON public.expense_categories;
-
-CREATE POLICY expense_categories_admin_manage ON public.expense_categories
-  FOR ALL TO authenticated
-  USING (public.current_user_role() = 'admin')
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- Expenses
-DROP POLICY IF EXISTS expenses_all ON public.expenses;
-DROP POLICY IF EXISTS expenses_admin_manage ON public.expenses;
-
-CREATE POLICY expenses_admin_manage ON public.expenses
-  FOR ALL TO authenticated
-  USING (public.current_user_role() = 'admin')
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 4. INVENTORY & AUDIT LEDGER: inventory_movements & barcode_registry
---    - movements: append-only ledger via RPC; read-only for admin & staff.
---    - barcode_registry: managed by admin & staff.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Inventory Movements
-DROP POLICY IF EXISTS inventory_movements_all ON public.inventory_movements;
-DROP POLICY IF EXISTS inventory_movements_staff_read ON public.inventory_movements;
-
-CREATE POLICY inventory_movements_staff_read ON public.inventory_movements
-  FOR SELECT TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'));
-
--- Barcode Registry
-DROP POLICY IF EXISTS barcode_registry_all ON public.barcode_registry;
-DROP POLICY IF EXISTS barcode_registry_staff_manage ON public.barcode_registry;
-
-CREATE POLICY barcode_registry_staff_manage ON public.barcode_registry
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 5. ORDERS & INVOICES: orders & order_items
---    - Full table access restricted to authenticated staff and admin.
---    - Customers read invoices exclusively via public SECURITY DEFINER RPC.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Orders
-DROP POLICY IF EXISTS orders_portal_manage ON public.orders;
-DROP POLICY IF EXISTS orders_staff_manage ON public.orders;
-
-CREATE POLICY orders_staff_manage ON public.orders
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
--- Order Items
-DROP POLICY IF EXISTS order_items_portal_manage ON public.order_items;
-DROP POLICY IF EXISTS order_items_staff_manage ON public.order_items;
-
-CREATE POLICY order_items_staff_manage ON public.order_items
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 6. ADVANCE ORDERS: advance_orders, timeline, payments
---    - Restricted to authenticated staff and admin.
--- ─────────────────────────────────────────────────────────────────────────────
-
-DROP POLICY IF EXISTS "Allow all for advance orders" ON public.advance_orders;
-DROP POLICY IF EXISTS "Allow all for advance timeline" ON public.advance_order_timeline;
-DROP POLICY IF EXISTS "Allow all for advance payments" ON public.advance_order_payments;
-
-CREATE POLICY advance_orders_staff_manage ON public.advance_orders
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY advance_timeline_staff_manage ON public.advance_order_timeline
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY advance_payments_staff_manage ON public.advance_order_payments
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 7. CUSTOMER BIRTHDAYS & OFFERS
---    - Restricted to authenticated staff and admin.
--- ─────────────────────────────────────────────────────────────────────────────
-
-DROP POLICY IF EXISTS "Admins and staff can manage customer birthdays" ON public.customer_birthdays;
-DROP POLICY IF EXISTS "Admins and staff can manage birthday offers" ON public.birthday_offers;
-
-CREATE POLICY customer_birthdays_staff_manage ON public.customer_birthdays
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY birthday_offers_staff_manage ON public.birthday_offers
-  FOR ALL TO authenticated
-  USING (public.current_user_role() IN ('admin', 'staff'))
-  WITH CHECK (public.current_user_role() IN ('admin', 'staff'));
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 8. STORE SETTINGS & COUPONS
---    - Store settings: readable by all (branding), editable only by admin.
---    - Coupons: readable by all (for validation), editable only by admin.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Store Settings
-DROP POLICY IF EXISTS store_settings_portal_manage ON public.store_settings;
-CREATE POLICY store_settings_public_read ON public.store_settings
-  FOR SELECT TO anon, authenticated
-  USING (TRUE);
-
-CREATE POLICY store_settings_admin_write ON public.store_settings
-  FOR ALL TO authenticated
-  USING (public.current_user_role() = 'admin')
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- Coupons
-DROP POLICY IF EXISTS coupons_portal_manage ON public.coupons;
-CREATE POLICY coupons_public_read ON public.coupons
-  FOR SELECT TO anon, authenticated
-  USING (is_active = TRUE OR public.current_user_role() IN ('admin', 'staff'));
-
-CREATE POLICY coupons_admin_manage ON public.coupons
-  FOR ALL TO authenticated
-  USING (public.current_user_role() = 'admin')
-  WITH CHECK (public.current_user_role() = 'admin');
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 9. RPC FUNCTION PRIVILEGES (Least-Privilege Enforcement)
---    - Revoke anonymous execution of financial and stock adjustment RPCs.
---    - Preserve public execution only for get_public_invoice_by_number.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Financial RPC: Admin only
-REVOKE EXECUTE ON FUNCTION public.get_expense_summary_metrics(DATE) FROM anon, PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_expense_summary_metrics(DATE) TO authenticated, service_role;
-
--- Stock Adjustment RPC: Staff & Admin only
-REVOKE EXECUTE ON FUNCTION public.adjust_inventory_stock(BIGINT, UUID, NUMERIC, TEXT, TEXT, TEXT) FROM anon, PUBLIC;
-GRANT EXECUTE ON FUNCTION public.adjust_inventory_stock(BIGINT, UUID, NUMERIC, TEXT, TEXT, TEXT) TO authenticated, service_role;
-
--- Stock Receiving & Barcode Creation: Staff & Admin only
-REVOKE EXECUTE ON FUNCTION public.create_barcode_and_receive_stock(BIGINT, UUID, NUMERIC, TEXT, NUMERIC, TEXT, TEXT, TEXT, TEXT, TEXT) FROM anon, PUBLIC;
-GRANT EXECUTE ON FUNCTION public.create_barcode_and_receive_stock(BIGINT, UUID, NUMERIC, TEXT, NUMERIC, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
-
--- POS Checkout RPC: Authenticated Staff and Admin only
--- NOTE: Requires frontend to obtain an authenticated session prior to checkout
-REVOKE EXECUTE ON FUNCTION public.complete_pos_sale_with_inventory(TEXT, TEXT, TEXT, JSONB, NUMERIC, TEXT, TEXT, TEXT, NUMERIC, NUMERIC, NUMERIC, TEXT, NUMERIC, TEXT, NUMERIC, TEXT, JSONB, NUMERIC, BOOLEAN, TEXT, TEXT, TIMESTAMPTZ) FROM anon, PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_pos_sale_with_inventory(TEXT, TEXT, TEXT, JSONB, NUMERIC, TEXT, TEXT, TEXT, NUMERIC, NUMERIC, NUMERIC, TEXT, NUMERIC, TEXT, NUMERIC, TEXT, JSONB, NUMERIC, BOOLEAN, TEXT, TEXT, TIMESTAMPTZ) TO authenticated, service_role;
-
--- Digital Invoice Lookup: Remains public so customers can view receipt links
-GRANT EXECUTE ON FUNCTION public.get_public_invoice_by_number(TEXT) TO anon, authenticated, service_role;
-
+GRANT EXECUTE ON FUNCTION public.complete_advance_order_v2(uuid, text, numeric, text, numeric, numeric, text, jsonb) TO public, anon, authenticated;
 NOTIFY pgrst, 'reload schema';
 
+-- 20261017_0032_universal_customer_birthdays_access.sql
+-- Migration: 20261017_0032_universal_customer_birthdays_access.sql
+-- Description: Enables universal access for customer birthdays and promotional offers across POS billing and Admin Dashboard.
+
+DROP POLICY IF EXISTS "Admins and staff can manage customer birthdays" ON public.customer_birthdays;
+DROP POLICY IF EXISTS customer_birthdays_staff_manage ON public.customer_birthdays;
+DROP POLICY IF EXISTS "Allow all for customer birthdays" ON public.customer_birthdays;
+
+CREATE POLICY "Allow all for customer birthdays"
+  ON public.customer_birthdays
+  FOR ALL
+  TO public
+  USING (true)
+  WITH CHECK (true);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.customer_birthdays TO public, anon, authenticated;
+
+DROP POLICY IF EXISTS "Admins and staff can manage birthday offers" ON public.birthday_offers;
+DROP POLICY IF EXISTS birthday_offers_staff_manage ON public.birthday_offers;
+DROP POLICY IF EXISTS "Allow all for birthday offers" ON public.birthday_offers;
+
+CREATE POLICY "Allow all for birthday offers"
+  ON public.birthday_offers
+  FOR ALL
+  TO public
+  USING (true)
+  WITH CHECK (true);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.birthday_offers TO public, anon, authenticated;
+
+-- 20261019_0033_settings_and_theme_customization.sql
+-- Migration: 20261019_0033_settings_and_theme_customization.sql
+-- Adds columns to store_settings for brand customization, theme colors, and profile fields
+
+BEGIN;
+
+-- 1. Ensure required columns exist on store_settings
+ALTER TABLE public.store_settings
+  ADD COLUMN IF NOT EXISTS theme_color TEXT DEFAULT '#171717',
+  ADD COLUMN IF NOT EXISTS tagline TEXT DEFAULT 'Wear Your Kingdom',
+  ADD COLUMN IF NOT EXISTS city TEXT DEFAULT 'Coimbatore, Tamil Nadu',
+  ADD COLUMN IF NOT EXISTS business_hours TEXT DEFAULT 'Open Daily 9:30 AM - 9:30 PM',
+  ADD COLUMN IF NOT EXISTS instagram_url TEXT DEFAULT 'https://www.instagram.com/cherasclothing_official/',
+  ADD COLUMN IF NOT EXISTS catalog_headline TEXT DEFAULT 'Exclusive Sarees, Men''s Wear & Kids',
+  ADD COLUMN IF NOT EXISTS gstin TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS logo_url TEXT DEFAULT '/cheras-icon-white.png';
+
+-- 2. Upsert initial CHERAS CLOTHING store profile record into store_settings (id = 1)
+INSERT INTO public.store_settings (
+  id,
+  name,
+  owner_name,
+  phone,
+  email,
+  address,
+  city,
+  business_hours,
+  tagline,
+  instagram_url,
+  catalog_headline,
+  gstin,
+  theme_color,
+  logo_url,
+  gst_enabled,
+  updated_at
+)
+VALUES (
+  1,
+  'CHERAS CLOTHING',
+  '',
+  '+91 9715083947',
+  'cherasclothing777@gmail.com',
+  '74, Cheras Clothing, Avinashi Road, opposite to Government Medical College, Coimbatore 641014',
+  'Coimbatore, Tamil Nadu',
+  'Open Daily 9:30 AM - 9:30 PM',
+  'Wear Your Kingdom',
+  'https://www.instagram.com/cherasclothing_official/',
+  'Exclusive Sarees, Men''s Wear & Kids',
+  '',
+  '#171717',
+  '/cheras-icon-white.png',
+  TRUE,
+  NOW()
+)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  owner_name = CASE WHEN store_settings.owner_name = '' OR store_settings.owner_name IS NULL THEN EXCLUDED.owner_name ELSE store_settings.owner_name END,
+  phone = EXCLUDED.phone,
+  email = EXCLUDED.email,
+  address = EXCLUDED.address,
+  city = COALESCE(store_settings.city, EXCLUDED.city),
+  business_hours = COALESCE(store_settings.business_hours, EXCLUDED.business_hours),
+  tagline = COALESCE(store_settings.tagline, EXCLUDED.tagline),
+  instagram_url = COALESCE(store_settings.instagram_url, EXCLUDED.instagram_url),
+  catalog_headline = COALESCE(store_settings.catalog_headline, EXCLUDED.catalog_headline),
+  gstin = COALESCE(store_settings.gstin, EXCLUDED.gstin),
+  theme_color = COALESCE(store_settings.theme_color, EXCLUDED.theme_color),
+  logo_url = COALESCE(store_settings.logo_url, EXCLUDED.logo_url),
+  updated_at = NOW();
+
+-- 3. Ensure public 'branding' storage bucket exists for shop logo uploads
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'branding',
+  'branding',
+  TRUE,
+  5242880,
+  ARRAY['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- 4. Enable RLS and grant read/write policies for store_settings
+ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS store_settings_portal_manage ON public.store_settings;
+CREATE POLICY store_settings_portal_manage ON public.store_settings
+  FOR ALL TO anon, authenticated USING (TRUE) WITH CHECK (TRUE);
+
 COMMIT;
+
+-- 20261019_0034_portal_logins_and_passwords.sql
+-- ============================================================================
+-- Migration: 20261019_0034_portal_logins_and_passwords.sql
+-- Description: In-app changeable admin/staff portal credentials with brute force protection
+-- ============================================================================
+
+-- 1. Enable pgcrypto extension for bcrypt hash compatibility
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
+-- 2. Ensure table public.portal_logins exists and has both login_id and password columns
+CREATE TABLE IF NOT EXISTS public.portal_logins (
+  role text PRIMARY KEY CHECK (role IN ('admin', 'staff')),
+  login_id text NOT NULL UNIQUE,
+  password_hash text,
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Safely add password column if it does not exist
+ALTER TABLE public.portal_logins ADD COLUMN IF NOT EXISTS password text;
+
+-- Allow password_hash to be nullable if it had a NOT NULL constraint previously
+ALTER TABLE public.portal_logins ALTER COLUMN password_hash DROP NOT NULL;
+
+-- Enable RLS with NO public policies (strictly accessible only via SECURITY DEFINER functions)
+ALTER TABLE public.portal_logins ENABLE ROW LEVEL SECURITY;
+
+-- 3. Brute-force protection table
+CREATE TABLE IF NOT EXISTS public.portal_login_attempts (
+  login_id text PRIMARY KEY,
+  failed_count int DEFAULT 0,
+  locked_until timestamptz DEFAULT NULL
+);
+ALTER TABLE public.portal_login_attempts ENABLE ROW LEVEL SECURITY;
+
+-- 4. Seed / Update Admin & Staff rows with default placeholders if empty
+INSERT INTO public.portal_logins (role, login_id, password_hash, password)
+VALUES
+  ('admin', 'admin', extensions.crypt('CHANGE_ME_ADMIN_PASSWORD', extensions.gen_salt('bf')), 'CHANGE_ME_ADMIN_PASSWORD'),
+  ('staff', 'staff', extensions.crypt('CHANGE_ME_STAFF_PASSWORD', extensions.gen_salt('bf')), 'CHANGE_ME_STAFF_PASSWORD')
+ON CONFLICT (role) DO UPDATE SET
+  login_id = EXCLUDED.login_id,
+  password = COALESCE(NULLIF(public.portal_logins.password, ''), EXCLUDED.password),
+  password_hash = COALESCE(public.portal_logins.password_hash, EXCLUDED.password_hash),
+  updated_at = now();
+
+-- 5. RPC: portal_login (verifies credentials against password or bcrypt hash, with brute-force lockout)
+CREATE OR REPLACE FUNCTION public.portal_login(p_id text, p_password text)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_role text;
+  v_db_password text;
+  v_db_hash text;
+  v_locked_until timestamptz;
+  v_failed int;
+  v_authenticated boolean := false;
+BEGIN
+  -- Check if login_id is currently locked out
+  SELECT locked_until, failed_count INTO v_locked_until, v_failed
+  FROM public.portal_login_attempts
+  WHERE login_id = p_id;
+
+  IF v_locked_until IS NOT NULL AND v_locked_until > now() THEN
+    RETURN NULL;
+  END IF;
+
+  -- Fetch user record
+  SELECT role, password, password_hash INTO v_role, v_db_password, v_db_hash
+  FROM public.portal_logins
+  WHERE login_id = p_id;
+
+  IF v_role IS NOT NULL THEN
+    -- Match against direct password or bcrypt password_hash
+    IF v_db_password IS NOT NULL AND v_db_password = p_password THEN
+      v_authenticated := true;
+    ELSIF v_db_hash IS NOT NULL AND v_db_hash = extensions.crypt(p_password, v_db_hash) THEN
+      v_authenticated := true;
+      -- Auto-sync password column if it was empty
+      IF v_db_password IS NULL OR v_db_password = '' THEN
+        UPDATE public.portal_logins SET password = p_password WHERE role = v_role;
+      END IF;
+    END IF;
+  END IF;
+
+  IF v_authenticated THEN
+    -- Reset brute force counter on successful authentication
+    DELETE FROM public.portal_login_attempts WHERE login_id = p_id;
+    RETURN v_role;
+  ELSE
+    -- Increment failed attempt and lock for 15 minutes after 5 consecutive failures
+    INSERT INTO public.portal_login_attempts (login_id, failed_count, locked_until)
+    VALUES (p_id, 1, NULL)
+    ON CONFLICT (login_id) DO UPDATE SET
+      failed_count = public.portal_login_attempts.failed_count + 1,
+      locked_until = CASE
+        WHEN public.portal_login_attempts.failed_count + 1 >= 5 THEN now() + interval '15 minutes'
+        ELSE NULL
+      END;
+    RETURN NULL;
+  END IF;
+END;
+$$;
+
+-- 6. RPC: portal_get_credentials (Admin-only: validates admin password, then returns IDs and passwords)
+CREATE OR REPLACE FUNCTION public.portal_get_credentials(p_admin_id text, p_admin_password text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_role text;
+  v_result jsonb;
+BEGIN
+  -- Authenticate admin
+  SELECT public.portal_login(p_admin_id, p_admin_password) INTO v_role;
+  IF v_role <> 'admin' THEN
+    IF EXISTS (
+      SELECT 1 FROM public.portal_logins
+      WHERE role = 'admin' AND (
+        (password IS NOT NULL AND password = p_admin_password) OR
+        (password_hash IS NOT NULL AND password_hash = extensions.crypt(p_admin_password, password_hash))
+      )
+    ) THEN
+      v_role := 'admin';
+    ELSE
+      RETURN NULL;
+    END IF;
+  END IF;
+
+  -- Build JSON map with admin and staff credentials
+  SELECT jsonb_object_agg(
+    role,
+    jsonb_build_object(
+      'login_id', login_id,
+      'password', COALESCE(password, '')
+    )
+  )
+  INTO v_result
+  FROM public.portal_logins;
+
+  RETURN v_result;
+END;
+$$;
+
+-- 7. RPC: portal_update_credential (Admin-only: updates login_id and password for admin or staff)
+CREATE OR REPLACE FUNCTION public.portal_update_credential(
+  p_admin_id text,
+  p_admin_password text,
+  p_target_role text,
+  p_new_login_id text,
+  p_new_password text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_role text;
+BEGIN
+  -- Authenticate admin
+  SELECT public.portal_login(p_admin_id, p_admin_password) INTO v_role;
+  IF v_role <> 'admin' THEN
+    IF EXISTS (
+      SELECT 1 FROM public.portal_logins
+      WHERE role = 'admin' AND (
+        (password IS NOT NULL AND password = p_admin_password) OR
+        (password_hash IS NOT NULL AND password_hash = extensions.crypt(p_admin_password, password_hash))
+      )
+    ) THEN
+      v_role := 'admin';
+    ELSE
+      RETURN false;
+    END IF;
+  END IF;
+
+  -- Validation: minimum length
+  IF length(trim(p_new_login_id)) < 3 OR length(trim(p_new_password)) < 6 THEN
+    RETURN false;
+  END IF;
+
+  -- Update record with both password and bcrypt hash
+  UPDATE public.portal_logins
+  SET login_id = trim(p_new_login_id),
+      password = trim(p_new_password),
+      password_hash = extensions.crypt(trim(p_new_password), extensions.gen_salt('bf')),
+      updated_at = now()
+  WHERE role = p_target_role;
+
+  RETURN true;
+END;
+$$;
+
+-- 8. Grant execute permissions
+GRANT EXECUTE ON FUNCTION public.portal_login(text, text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.portal_get_credentials(text, text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.portal_update_credential(text, text, text, text, text) TO anon, authenticated;
+
+-- ============================================================================
+-- MANUAL ROLLBACK BLOCK (In case of revert):
+-- ============================================================================
+/*
+DROP FUNCTION IF EXISTS public.portal_update_credential(text, text, text, text, text);
+DROP FUNCTION IF EXISTS public.portal_get_credentials(text, text);
+DROP FUNCTION IF EXISTS public.portal_login(text, text);
+DROP TABLE IF EXISTS public.portal_login_attempts;
+DROP TABLE IF EXISTS public.portal_logins;
 */
+
+-- 20261021_0035_cheras_clothing_profile.sql
+-- Apply the supplied Cheras profile after the inherited template migrations.
+BEGIN;
+UPDATE public.store_settings SET
+  name = 'CHERAS CLOTHING',
+  owner_name = '',
+  phone = '+91 9715083947',
+  email = 'cherasclothing777@gmail.com',
+  address = '74, Cheras Clothing, Avinashi Road, opposite to Government Medical College, Coimbatore 641014',
+  city = 'Coimbatore, Tamil Nadu',
+  tagline = 'Wear Your Kingdom',
+  instagram_url = 'https://www.instagram.com/cherasclothing_official/',
+  catalog_headline = 'Explore the Cheras Clothing Collection',
+  gstin = '',
+  gst_enabled = FALSE,
+  theme_color = '#171717',
+  logo_url = '/cheras-logo.png',
+  updated_at = NOW()
+WHERE id = 1;
+COMMIT;
