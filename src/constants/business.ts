@@ -1,0 +1,5 @@
+export const BUSINESS_NAME = 'CHERAS CLOTHING'
+export const BUSINESS_GSTIN = ''
+export const BUSINESS_PHONE = '919715083947'
+export const BUSINESS_PHONE_DISPLAY = '+91 9715083947'
+export const BUSINESS_WHATSAPP_LINK = `https://wa.me/919715083947`

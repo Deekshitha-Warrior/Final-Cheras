@@ -1,0 +1,37 @@
+{
+  "name": "CHERAS CLOTHING - Wholesale & Retail Textile Shop",
+  "short_name": "CHERAS CLOTHING",
+  "description": "CHERAS CLOTHING - Wholesale and retail textile shop, billing, barcode inventory, catalog, order, receipt, and invoice administration.",
+  "theme_color": "#171717",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "orientation": "any",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/cheras-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cheras-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cheras-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/cheras-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
